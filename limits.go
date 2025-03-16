@@ -35,7 +35,7 @@ func initRelayLimits() {
 	prettyPrintLimits("Relay limits", relayLimits)
 }
 
-func prettyPrintLimits(label string, value interface{}) {
+func prettyPrintLimits(label string, value any) {
 	b, _ := json.MarshalIndent(value, "", "  ")
 	log.Printf("🚧 %s:\n%s\n", label, string(b))
 }

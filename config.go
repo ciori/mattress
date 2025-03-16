@@ -49,11 +49,12 @@ func getUserNpubsFromFile(filePath string) map[string]bool {
 	if err != nil {
 		log.Fatalf("Failed to read file: %s", err)
 	}
-	var userNpubs map[string]bool
-	if err := json.Unmarshal(file, &userNpubs); err != nil {
+	var userNpubsList []string
+	userNpubs := map[string]bool{}
+	if err := json.Unmarshal(file, &userNpubsList); err != nil {
 		log.Fatalf("Failed to parse JSON: %s", err)
 	}
-	for npub := range userNpubs {
+	for _, npub := range userNpubsList {
 		userNpubs[strings.TrimSpace(npub)] = true
 	}
 	return userNpubs

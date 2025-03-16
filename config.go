@@ -11,18 +11,18 @@ import (
 )
 
 type Config struct {
-	DBEngine         string   `json:"db_engine"`
-	LmdbMapSize      int64    `json:"lmdb_map_size"`
-	RelayURL         string   `json:"relay_url"`
-	RelayPort        int      `json:"relay_port"`
-	RelayBindAddress string   `json:"relay_bind_address"`
-	RelaySoftware    string   `json:"relay_software"`
-	RelayVersion     string   `json:"relay_version"`
-	RelayName        string   `json:"relay_name"`
-	RelayNpub        string   `json:"relay_npub"`
-	RelayDescription string   `json:"relay_description"`
-	RelayIcon        string   `json:"relay_icon"`
-	UserNpubs        []string `json:"user_npubs"`
+	DBEngine         string          `json:"db_engine"`
+	LmdbMapSize      int64           `json:"lmdb_map_size"`
+	RelayURL         string          `json:"relay_url"`
+	RelayPort        int             `json:"relay_port"`
+	RelayBindAddress string          `json:"relay_bind_address"`
+	RelaySoftware    string          `json:"relay_software"`
+	RelayVersion     string          `json:"relay_version"`
+	RelayName        string          `json:"relay_name"`
+	RelayNpub        string          `json:"relay_npub"`
+	RelayDescription string          `json:"relay_description"`
+	RelayIcon        string          `json:"relay_icon"`
+	UserNpubs        map[string]bool `json:"user_npubs"`
 }
 
 func loadConfig() Config {
@@ -44,17 +44,17 @@ func loadConfig() Config {
 	}
 }
 
-func getUserNpubsFromFile(filePath string) []string {
+func getUserNpubsFromFile(filePath string) map[string]bool {
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("Failed to read file: %s", err)
 	}
-	var userNpubs []string
+	var userNpubs map[string]bool
 	if err := json.Unmarshal(file, &userNpubs); err != nil {
 		log.Fatalf("Failed to parse JSON: %s", err)
 	}
-	for i, npub := range userNpubs {
-		userNpubs[i] = strings.TrimSpace(npub)
+	for npub := range userNpubs {
+		userNpubs[strings.TrimSpace(npub)] = true
 	}
 	return userNpubs
 }

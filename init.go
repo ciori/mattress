@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"io"
 	"net/http"
 	"text/template"
 	"time"
@@ -13,11 +11,6 @@ import (
 	"github.com/fiatjaf/khatru"
 	"github.com/fiatjaf/khatru/policies"
 	"github.com/nbd-wtf/go-nostr"
-)
-
-var (
-	relay   = khatru.NewRelay()
-	db = newDBBackend("db/relay")
 )
 
 type DBBackend interface {
@@ -51,7 +44,7 @@ func newLMDBBackend(path string) *lmdb.LMDBBackend {
 	}
 }
 
-func initRelays() {
+func initRelay() {
 	if err := db.Init(); err != nil {
 		panic(err)
 	}
@@ -59,7 +52,7 @@ func initRelays() {
 	initRelayLimits()
 
 	relay.Info.Name = config.RelayName
-	relay.Info.PubKey = nPubToPubkey(config.RelayNpub)
+	relay.Info.PubKey = npubToPubkey(config.RelayNpub)
 	relay.Info.Description = config.RelayDescription
 	relay.Info.Icon = config.RelayIcon
 	relay.Info.Version = config.RelayVersion
@@ -103,20 +96,17 @@ func initRelays() {
 
 	relay.RejectFilter = append(relay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
-		if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+		if config.UserNpubs[pubkeyToNpub(authenticatedUser)] {
 			return false, ""
 		}
-
 		return true, "auth-required: this query requires you to be authenticated"
 	})
 
 	relay.RejectEvent = append(relay.RejectEvent, func(ctx context.Context, event *nostr.Event) (bool, string) {
 		authenticatedUser := khatru.GetAuthed(ctx)
-
-		if authenticatedUser == nPubToPubkey(config.OwnerNpub) {
+		if config.UserNpubs[pubkeyToNpub(authenticatedUser)] {
 			return false, ""
 		}
-
 		return true, "auth-required: publishing this event requires authentication"
 	})
 
@@ -131,7 +121,7 @@ func initRelays() {
 			RelayURL         string
 		}{
 			RelayName:        config.RelayName,
-			RelayPubkey:      nPubToPubkey(config.RelayNpub),
+			RelayPubkey:      npubToPubkey(config.RelayNpub),
 			RelayDescription: config.RelayDescription,
 			RelayURL:         "wss://" + config.RelayURL + "/relay",
 		}

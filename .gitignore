@@ -12,4 +12,8 @@ go.work.sum
 .env
 
 # Mattress related
+
+mattress
+db
 user_npubs.json
+tests.txt

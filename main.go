@@ -38,9 +38,7 @@ func main() {
 }
 
 func relayHandler(w http.ResponseWriter, r *http.Request) {
-	var relay *khatru.Relay
 	urlPath := r.URL.Path
-
 	if urlPath == "/relay" {
 		relay.ServeHTTP(w, r)
 	}

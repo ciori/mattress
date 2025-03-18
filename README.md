@@ -1,24 +1,13 @@
 # Mattress
 
-*"Hide your cash under the mattress!"*
+_"Hide your cash under the mattress!"_
 
-Nostr relay for Cashu tokens of whitelisted npubs.
+Nostr relay for Cashu tokens of whitelisted pubkeys.
 
-Based on and inspired by the [haven](https://github.com/bitvora/haven) relay.
+Based on and inspired by the [haven](https://github.com/bitvora/haven) and [sw2](https://github.com/bitvora/sw2) relays.
 
-## Build
+## TODOs
 
-Build and run it locally with go:
-```bash
-# rm -rf db
-# go mod download
-# go mod tidy
-go build
-./mattress
-```
-
-Or use a container (podman):
-```bash
-podman build -t mattress:test .
-podman run -it --rm --replace --name mattress -p 127.0.0.1:2121:2121 -v ./.env:/app/.env:Z -v ./user_npubs.json:/app/user_npubs.json:Z localhost/mattress:test
-```
+- [ ] Only allow cashu wallet related events and kinds
+- [ ] Allow correct "public" read and write permissions based on cashu flow
+- [ ] Change user pubkyes list with a map anc change the auth condition to leverage it

@@ -15,5 +15,4 @@ go.work.sum
 
 mattress
 db
-user_npubs.json
-tests.txt
+users.json

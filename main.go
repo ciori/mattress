@@ -157,27 +157,46 @@ func main() {
 	relay.CountEvents = append(relay.CountEvents, db.CountEvents)
 	relay.DeleteEvent = append(relay.DeleteEvent, db.DeleteEvent)
 	relay.ReplaceEvent = append(relay.ReplaceEvent, db.ReplaceEvent)
-	// Set required authentication on connect
+	// Ask for authentication on connect
 	relay.OnConnect = append(relay.OnConnect, func(ctx context.Context) {
 		khatru.RequestAuth(ctx)
 	})
-	// Only allow writing events from whitelisted users (NEEDS TO BE CHANGED)
-	relay.RejectEvent = append(relay.RejectEvent, func(ctx context.Context, event *nostr.Event) (reject bool, msg string) {
-		// Event must have a pubkey
-		if event.PubKey == "" {
-			return true, "no pubkey"
-		}
-		// Allow all if there are no whitelisted users
-		if len(users.Pubkeys) == 0 {
+	// Read permissions
+	relay.RejectFilter = append(relay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
+		// Allow anyone to read public cashu info about users
+		if len(filter.Kinds) == 1 && slices.Contains(filter.Kinds, nostr.KindNutZapInfo) {
 			return false, ""
+		} else {
+			// For everything else, you must be authenticated
+			authenticatedUser := khatru.GetAuthed(ctx)
+			// If not authenticated, then request auhtentication
+			if authenticatedUser == "" {
+				return true, "auth-required: this query requires you to be authenticated"
+			} else { // Otherwhise continue...
+				// ...
+				// Check if user is whitelisted
+				if slices.Contains(users.Pubkeys, authenticatedUser) {
+					// ...
+				} else {
+					return true, "restricted: you're not a member of the privileged group that can read that stuff"
+				}
+				// ...
+			}
 		}
-		// Check whether the user is whitelisted
-		if slices.Contains(users.Pubkeys, event.PubKey) {
-			return false, ""
-		}
-		return true, "pubkey not whitelisted"
+		return true, "auth-required: this query requires you to be authenticated"
 	})
-	// ...
+	// Write permissions
+	relay.RejectEvent = append(relay.RejectEvent, func(ctx context.Context, event *nostr.Event) (reject bool, msg string) {
+		// Is the authenticated user whitelisted?
+		authenticatedUser := khatru.GetAuthed(ctx)
+		if slices.Contains(users.Pubkeys, authenticatedUser) {
+			// Other logic
+			// ...
+		} else {
+			return true, "restricted: you're not a member of the privileged group that can read that stuff"
+		}
+		return true, "auth-required: publishing this event requires authentication"
+	})
 
 	// Serve the relay
 	endpoint := fmt.Sprintf("%s:%d", config.RelayBindAddress, config.RelayPort)

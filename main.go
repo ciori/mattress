@@ -163,10 +163,16 @@ func main() {
 	})
 	// Read permissions
 	relay.RejectFilter = append(relay.RejectFilter, func(ctx context.Context, filter nostr.Filter) (bool, string) {
-		// Allow anyone to read public cashu info about users
+		// Allow anyone to read only the public cashu info about users
 		if len(filter.Kinds) == 1 && slices.Contains(filter.Kinds, nostr.KindNutZapInfo) {
 			return false, ""
 		} else {
+			// ...CHECK OTHER KINDS HERE...
+			// ...
+			// 17375, 7374, 7375, 7376? auth then only if authorized and on own events
+			// 9321? auth then only if sender or receiver (if authorized)
+
+			// ...EXAMPLE UNDER HERE...
 			// For everything else, you must be authenticated
 			authenticatedUser := khatru.GetAuthed(ctx)
 			// If not authenticated, then request auhtentication
@@ -187,6 +193,10 @@ func main() {
 	})
 	// Write permissions
 	relay.RejectEvent = append(relay.RejectEvent, func(ctx context.Context, event *nostr.Event) (reject bool, msg string) {
+		// ...CHECK OTHER KINDS HERE...
+		// ...
+
+		// ...EXAMPLE UNDER HERE...
 		// Is the authenticated user whitelisted?
 		authenticatedUser := khatru.GetAuthed(ctx)
 		if slices.Contains(users.Pubkeys, authenticatedUser) {
